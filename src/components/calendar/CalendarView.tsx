@@ -74,29 +74,21 @@ export default function CalendarView() {
           const isToday = date && formatDate(date) === formatDate(today);
           const events = date ? getEventsForDate(date) : [];
           const lectures = date ? getLecturesForDate(date) : [];
-
           return (
             <div key={i} className="border-r border-b min-h-[90px] p-1">
               {date && (
                 <>
-                  <span className={`text-sm inline-flex items-center justify-center w-6 h-6 rounded-full
-                    ${isToday ? "bg-blue-600 text-white font-bold" : "text-gray-700"}`}>
+                  <span className={`text-sm inline-flex items-center justify-center w-6 h-6 rounded-full ${isToday ? "bg-blue-600 text-white font-bold" : "text-gray-700"}`}>
                     {date.getDate()}
                   </span>
                   <div className="mt-1 space-y-0.5">
                     {lectures.map(lecture => (
-                        key={lecture.id}
-                        href="/timetable"
-                        className="block text-xs px-1 rounded truncate bg-orange-400 text-white hover:bg-orange-500"
-                        >
-                        📚 {lecture.name}
-                        </a>
-                        ))}
+                      <a key={lecture.id} href="/timetable" className="block text-xs px-1 rounded truncate bg-orange-400 text-white hover:bg-orange-500">
+                        {lecture.name}
+                      </a>
+                    ))}
                     {events.map(event => (
-                      <div
-                        key={event.id}
-                        className={`text-xs px-1 rounded truncate ${getCategoryColor(event.category)}`}
-                      >
+                      <div key={event.id} className={`text-xs px-1 rounded truncate ${getCategoryColor(event.category)}`}>
                         {event.title}
                       </div>
                     ))}
