@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lecture, DayOfWeek } from "@/types";
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
@@ -13,34 +13,124 @@ const DAYS: { key: DayOfWeek; label: string }[] = [
 
 const PERIODS = [1, 2, 3, 4, 5];
 
-// サンプルデータ（後でDBに置き換え）
-const SAMPLE_LECTURES: Lecture[] = [
-  { id: "1", name: "線形代数", dayOfWeek: "mon", period: 1, memo: "行列の計算", assignment: "演習問題3章", assignmentDeadline: "2026-03-20" },
-  { id: "2", name: "プログラミング", dayOfWeek: "tue", period: 2, memo: "Reactの基礎", assignment: "課題アプリ作成", assignmentDeadline: "2026-03-25" },
-  { id: "3", name: "英語", dayOfWeek: "wed", period: 3 },
-  { id: "4", name: "データ構造", dayOfWeek: "thu", period: 1, memo: "木構造とグラフ" },
-  { id: "5", name: "統計学", dayOfWeek: "fri", period: 2, assignment: "レポート提出", assignmentDeadline: "2026-03-18" },
-];
-
 export default function TimetableView() {
+  const [lectures, setLectures] = useState<Lecture[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newLecture, setNewLecture] = useState<{
+    name: string; dayOfWeek: DayOfWeek; period: number;
+    memo: string; assignment: string; assignmentDeadline: string;
+  }>({ name: "", dayOfWeek: "mon", period: 1, memo: "", assignment: "", assignmentDeadline: "" });
+  const [loading, setLoading] = useState(true);
+
+  // データ取得
+  useEffect(() => {
+    fetch("/api/lectures")
+      .then(r => r.json())
+      .then(data => { setLectures(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   const getLecture = (day: DayOfWeek, period: number) =>
-    SAMPLE_LECTURES.find(l => l.dayOfWeek === day && l.period === period);
+    lectures.find(l => l.dayOfWeek === day && l.period === period);
 
-  const toggle = (id: string) => setOpenId(prev => prev === id ? null : id);
+  // 講義追加
+  const addLecture = async () => {
+    if (!newLecture.name) return;
+    const res = await fetch("/api/lectures", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...newLecture,
+        memo: newLecture.memo || null,
+        assignment: newLecture.assignment || null,
+        assignmentDeadline: newLecture.assignmentDeadline || null,
+      }),
+    });
+    const created = await res.json();
+    setLectures(prev => [...prev, created]);
+    setNewLecture({ name: "", dayOfWeek: "mon", period: 1, memo: "", assignment: "", assignmentDeadline: "" });
+    setShowAddForm(false);
+  };
+
+  // 講義削除
+  const deleteLecture = async (id: string) => {
+    await fetch(`/api/lectures/${id}`, { method: "DELETE" });
+    setLectures(prev => prev.filter(l => l.id !== id));
+  };
+
+  if (loading) return <div className="p-4 text-gray-400">読み込み中...</div>;
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">時間割</h2>
+    <div className="bg-white rounded-xl shadow-sm p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-gray-800">時間割</h2>
+        <button
+          onClick={() => setShowAddForm(!showAddForm)}
+          className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+        >
+          ＋ 講義追加
+        </button>
+      </div>
 
+      {/* 講義追加フォーム */}
+      {showAddForm && (
+        <div className="mb-4 p-3 border rounded-lg bg-gray-50 flex flex-wrap gap-2 items-end">
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">講義名</label>
+            <input type="text" value={newLecture.name}
+              onChange={e => setNewLecture(p => ({ ...p, name: e.target.value }))}
+              className="border rounded px-2 py-1 text-sm w-32" placeholder="例：線形代数" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">曜日</label>
+            <select value={newLecture.dayOfWeek}
+              onChange={e => setNewLecture(p => ({ ...p, dayOfWeek: e.target.value as DayOfWeek }))}
+              className="border rounded px-2 py-1 text-sm">
+              {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">時限</label>
+            <select value={newLecture.period}
+              onChange={e => setNewLecture(p => ({ ...p, period: Number(e.target.value) }))}
+              className="border rounded px-2 py-1 text-sm">
+              {PERIODS.map(p => <option key={p} value={p}>{p}限</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">メモ</label>
+            <input type="text" value={newLecture.memo}
+              onChange={e => setNewLecture(p => ({ ...p, memo: e.target.value }))}
+              className="border rounded px-2 py-1 text-sm w-28" placeholder="任意" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">課題</label>
+            <input type="text" value={newLecture.assignment}
+              onChange={e => setNewLecture(p => ({ ...p, assignment: e.target.value }))}
+              className="border rounded px-2 py-1 text-sm w-28" placeholder="任意" />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">期限</label>
+            <input type="date" value={newLecture.assignmentDeadline}
+              onChange={e => setNewLecture(p => ({ ...p, assignmentDeadline: e.target.value }))}
+              className="border rounded px-2 py-1 text-sm" />
+          </div>
+          <div className="flex gap-1">
+            <button onClick={addLecture} className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600">保存</button>
+            <button onClick={() => setShowAddForm(false)} className="text-xs bg-gray-300 px-3 py-1.5 rounded">キャンセル</button>
+          </div>
+        </div>
+      )}
+
+      {/* 時間割テーブル */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse min-w-[400px]">
           <thead>
             <tr>
-              <th className="border bg-gray-100 px-3 py-2 text-sm w-12">限</th>
+              <th className="border bg-gray-50 px-2 py-2 text-xs text-gray-500 w-10">限</th>
               {DAYS.map(d => (
-                <th key={d.key} className="border bg-gray-100 px-3 py-2 text-sm">
+                <th key={d.key} className="border bg-gray-50 px-2 py-2 text-sm font-medium text-gray-700">
                   {d.label}
                 </th>
               ))}
@@ -49,44 +139,47 @@ export default function TimetableView() {
           <tbody>
             {PERIODS.map(period => (
               <tr key={period}>
-                <td className="border bg-gray-50 text-center text-sm font-medium py-2">
-                  {period}限
+                <td className="border bg-gray-50 text-center text-xs font-medium py-2 text-gray-500">
+                  {period}
                 </td>
                 {DAYS.map(day => {
                   const lecture = getLecture(day.key, period);
                   return (
-                    <td key={day.key} className="border p-1 align-top min-w-[120px]">
+                    <td key={day.key} className="border p-1 align-top">
                       {lecture ? (
                         <div>
                           <button
-                            onClick={() => toggle(lecture.id)}
-                            className="w-full text-left bg-orange-100 hover:bg-orange-200 rounded px-2 py-1 text-sm font-medium text-orange-800 transition-colors"
+                            onClick={() => setOpenId(prev => prev === lecture.id ? null : lecture.id)}
+                            className="w-full text-left bg-orange-50 border border-orange-200 hover:bg-orange-100 rounded px-2 py-1.5 text-xs font-medium text-orange-800 transition-colors"
                           >
-                            {lecture.name}
-                            <span className="ml-1 text-xs">{openId === lecture.id ? "▲" : "▼"}</span>
+                            <div className="truncate">{lecture.name}</div>
+                            <div className="text-orange-400 text-right">{openId === lecture.id ? "▲" : "▼"}</div>
                           </button>
-
                           {openId === lecture.id && (
-                            <div className="mt-1 p-2 bg-white border rounded text-xs space-y-1">
-                              <div>
-                                <span className="font-medium text-gray-500">メモ：</span>
-                                <span>{lecture.memo || "なし"}</span>
+                            <div className="mt-1 p-2 bg-white border border-gray-100 rounded shadow-sm text-xs space-y-1.5">
+                              <div className="flex gap-1">
+                                <span className="text-gray-400 shrink-0">メモ</span>
+                                <span className="text-gray-700">{lecture.memo || "なし"}</span>
                               </div>
-                              <div>
-                                <span className="font-medium text-gray-500">課題：</span>
-                                <span>{lecture.assignment || "なし"}</span>
+                              <div className="flex gap-1">
+                                <span className="text-gray-400 shrink-0">課題</span>
+                                <span className="text-gray-700">{lecture.assignment || "なし"}</span>
                               </div>
                               {lecture.assignmentDeadline && (
-                                <div>
-                                  <span className="font-medium text-gray-500">期限：</span>
-                                  <span className="text-red-600">{lecture.assignmentDeadline}</span>
+                                <div className="flex gap-1">
+                                  <span className="text-gray-400 shrink-0">期限</span>
+                                  <span className="text-red-500 font-medium">{lecture.assignmentDeadline}</span>
                                 </div>
                               )}
+                              <button
+                                onClick={() => deleteLecture(lecture.id)}
+                                className="text-xs text-red-400 hover:text-red-600 mt-1"
+                              >削除</button>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="h-8" />
+                        <div className="min-h-[40px]" />
                       )}
                     </td>
                   );
