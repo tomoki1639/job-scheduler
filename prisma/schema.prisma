@@ -11,31 +11,59 @@ model CalendarEvent {
   id          String   @id @default(cuid())
   title       String
   date        String
-  category    String   // "job" | "private" | "lecture"
+  category    String
   description String?
+  startTime   String?
+  endTime     String?
+  icon        String?
   createdAt   DateTime @default(now())
 }
 
 model Lecture {
-  id                 String   @id @default(cuid())
+  id                 String          @id @default(cuid())
   name               String
-  dayOfWeek          String   // "mon" | "tue" | "wed" | "thu" | "fri"
+  dayOfWeek          String
   period             Int
+  startTime          String?
+  endTime            String?
+  room               String?
+  teacher            String?
   memo               String?
   assignment         String?
   assignmentDeadline String?
-  attended           Boolean  @default(false)
-  createdAt          DateTime @default(now())
+  attended           Boolean         @default(false)
+  sessions           LectureSession[]
+  createdAt          DateTime        @default(now())
+}
+
+model LectureSession {
+  id         String   @id @default(cuid())
+  lecture    Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  lectureId  String
+  sessionNum Int
+  content    String?
+  memo       String?
+  materials  String?
+  createdAt  DateTime @default(now())
+}
+
+model Todo {
+  id          String   @id @default(cuid())
+  title       String
+  date        String
+  completed   Boolean  @default(false)
+  lectureId   String?
+  createdAt   DateTime @default(now())
 }
 
 model Company {
-  id          String      @id @default(cuid())
-  name        String
-  status      String      @default("considering")
+  id           String    @id @default(cuid())
+  name         String
+  status       String    @default("considering")
   nextDeadline String?
-  memo        String?
-  esEntries   ESEntry[]
-  createdAt   DateTime    @default(now())
+  memo         String?
+  esEntries    ESEntry[]
+  createdAt    DateTime  @default(now())
 }
 
 model ESEntry {

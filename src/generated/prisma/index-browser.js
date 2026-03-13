@@ -126,6 +126,9 @@ exports.Prisma.CalendarEventScalarFieldEnum = {
   date: 'date',
   category: 'category',
   description: 'description',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  icon: 'icon',
   createdAt: 'createdAt'
 };
 
@@ -134,10 +137,33 @@ exports.Prisma.LectureScalarFieldEnum = {
   name: 'name',
   dayOfWeek: 'dayOfWeek',
   period: 'period',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  room: 'room',
+  teacher: 'teacher',
   memo: 'memo',
   assignment: 'assignment',
   assignmentDeadline: 'assignmentDeadline',
   attended: 'attended',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LectureSessionScalarFieldEnum = {
+  id: 'id',
+  lectureId: 'lectureId',
+  sessionNum: 'sessionNum',
+  content: 'content',
+  memo: 'memo',
+  materials: 'materials',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TodoScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  date: 'date',
+  completed: 'completed',
+  lectureId: 'lectureId',
   createdAt: 'createdAt'
 };
 
@@ -184,6 +210,8 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   CalendarEvent: 'CalendarEvent',
   Lecture: 'Lecture',
+  LectureSession: 'LectureSession',
+  Todo: 'Todo',
   Company: 'Company',
   ESEntry: 'ESEntry',
   ESQuestion: 'ESQuestion'
