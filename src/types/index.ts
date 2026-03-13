@@ -6,6 +6,9 @@ export interface CalendarEvent {
   date: string;
   category: EventCategory;
   description?: string;
+  startTime?: string;
+  endTime?: string;
+  icon?: string;
 }
 
 export type JobStatus =
