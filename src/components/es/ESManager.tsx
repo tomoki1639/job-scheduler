@@ -1,84 +1,118 @@
 "use client";
 
-import { useState } from "react";
-import { ESEntry, ESQuestion, ES_TEMPLATES } from "@/types";
+import { useState, useEffect } from "react";
+import { ES_TEMPLATES } from "@/types";
 
-const INITIAL_DATA: ESEntry[] = [
-  {
-    id: "1",
-    companyName: "〇〇商事",
-    createdAt: "2026-03-01",
-    questions: [
-      { id: "q1", title: "志望動機", answer: "御社の〇〇に魅力を感じ...", maxLength: 400 },
-      { id: "q2", title: "ガクチカ", answer: "大学でプログラミングサークルに所属し...", maxLength: 400 },
-    ],
-  },
-];
+interface ESQuestion {
+  id: string;
+  title: string;
+  answer: string;
+  maxLength?: number | null;
+  entryId: string;
+}
+
+interface ESEntry {
+  id: string;
+  questions: ESQuestion[];
+}
+
+interface Company {
+  id: string;
+  name: string;
+  createdAt: string;
+  esEntries: ESEntry[];
+}
 
 export default function ESManager() {
-  const [entries, setEntries] = useState<ESEntry[]>(INITIAL_DATA);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [openQuestionId, setOpenQuestionId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newCompanyName, setNewCompanyName] = useState("");
   const [showNewCompanyInput, setShowNewCompanyInput] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const selectedEntry = entries.find(e => e.id === selectedId);
+  const selectedCompany = companies.find(e => e.id === selectedId);
+  const selectedEntry = selectedCompany?.esEntries[0];
+
+  // 企業一覧取得
+  useEffect(() => {
+    fetch("/api/companies")
+      .then(res => res.json())
+      .then(data => { setCompanies(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
   // 企業追加
-  const addCompany = () => {
+  const addCompany = async () => {
     if (!newCompanyName.trim()) return;
-    const newEntry: ESEntry = {
-      id: Date.now().toString(),
-      companyName: newCompanyName.trim(),
-      createdAt: new Date().toISOString().split("T")[0],
-      questions: [],
-    };
-    setEntries(prev => [...prev, newEntry]);
+    const res = await fetch("/api/companies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newCompanyName.trim() }),
+    });
+    const newCompany = await res.json();
+    setCompanies(prev => [newCompany, ...prev]);
     setNewCompanyName("");
     setShowNewCompanyInput(false);
-    setSelectedId(newEntry.id);
+    setSelectedId(newCompany.id);
   };
 
   // 企業削除
-  const deleteCompany = (id: string) => {
-    setEntries(prev => prev.filter(e => e.id !== id));
+  const deleteCompany = async (id: string) => {
+    await fetch(`/api/companies/${id}`, { method: "DELETE" });
+    setCompanies(prev => prev.filter(e => e.id !== id));
     if (selectedId === id) setSelectedId(null);
   };
 
-  // 設問追加（テンプレートから）
-  const addQuestionFromTemplate = (template: { title: string; maxLength: number }) => {
-    if (!selectedId) return;
-    const newQ: ESQuestion = {
-      id: Date.now().toString(),
-      title: template.title,
-      answer: "",
-      maxLength: template.maxLength,
-    };
-    setEntries(prev => prev.map(e =>
-      e.id === selectedId ? { ...e, questions: [...e.questions, newQ] } : e
+  // 設問追加
+  const addQuestionFromTemplate = async (template: { title: string; maxLength: number }) => {
+    if (!selectedEntry) return;
+    const res = await fetch("/api/questions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entryId: selectedEntry.id, title: template.title, maxLength: template.maxLength }),
+    });
+    const newQuestion = await res.json();
+    setCompanies(prev => prev.map(c =>
+      c.id === selectedId
+        ? { ...c, esEntries: [{ ...selectedEntry, questions: [...selectedEntry.questions, newQuestion] }] }
+        : c
     ));
   };
 
   // 設問削除
-  const deleteQuestion = (questionId: string) => {
-    if (!selectedId) return;
-    setEntries(prev => prev.map(e =>
-      e.id === selectedId
-        ? { ...e, questions: e.questions.filter(q => q.id !== questionId) }
-        : e
+  const deleteQuestion = async (questionId: string) => {
+    if (!selectedEntry) return;
+    await fetch(`/api/questions/${questionId}`, { method: "DELETE" });
+    setCompanies(prev => prev.map(c =>
+      c.id === selectedId
+        ? { ...c, esEntries: [{ ...selectedEntry, questions: selectedEntry.questions.filter(q => q.id !== questionId) }] }
+        : c
     ));
   };
 
   // 回答更新
   const updateAnswer = (questionId: string, answer: string) => {
-    if (!selectedId) return;
-    setEntries(prev => prev.map(e =>
-      e.id === selectedId
-        ? { ...e, questions: e.questions.map(q => q.id === questionId ? { ...q, answer } : q) }
-        : e
+    if (!selectedEntry) return;
+    setCompanies(prev => prev.map(c =>
+      c.id === selectedId
+        ? { ...c, esEntries: [{ ...selectedEntry, questions: selectedEntry.questions.map(q => q.id === questionId ? { ...q, answer } : q) }] }
+        : c
     ));
   };
+
+  // 回答保存
+  const saveAnswer = async (questionId: string, answer: string) => {
+    await fetch(`/api/questions/${questionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answer }),
+    });
+    setEditingId(null);
+  };
+
+  if (loading) return <div className="p-4 text-gray-400">読み込み中...</div>;
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
@@ -116,16 +150,16 @@ export default function ESManager() {
           )}
 
           <div className="space-y-1">
-            {entries.map(entry => (
+            {companies.map(company => (
               <div
-                key={entry.id}
+                key={company.id}
                 className={`flex items-center justify-between px-2 py-2 rounded cursor-pointer text-sm
-                  ${selectedId === entry.id ? "bg-blue-100 text-blue-800 font-medium" : "hover:bg-gray-100"}`}
-                onClick={() => setSelectedId(entry.id)}
+                  ${selectedId === company.id ? "bg-blue-100 text-blue-800 font-medium" : "hover:bg-gray-100"}`}
+                onClick={() => setSelectedId(company.id)}
               >
-                <span className="truncate">{entry.companyName}</span>
+                <span className="truncate">{company.name}</span>
                 <button
-                  onClick={e => { e.stopPropagation(); deleteCompany(entry.id); }}
+                  onClick={e => { e.stopPropagation(); deleteCompany(company.id); }}
                   className="text-gray-400 hover:text-red-500 ml-1 text-xs"
                 >✕</button>
               </div>
@@ -135,13 +169,11 @@ export default function ESManager() {
 
         {/* 右カラム：ES設問リスト */}
         <div className="flex-1">
-          {!selectedEntry ? (
+          {!selectedCompany ? (
             <div className="text-gray-400 text-sm mt-4">企業を選択してください</div>
           ) : (
             <>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-lg">{selectedEntry.companyName}</h3>
-              </div>
+              <h3 className="font-bold text-lg mb-3">{selectedCompany.name}</h3>
 
               {/* テンプレートから追加 */}
               <div className="mb-4">
@@ -159,63 +191,62 @@ export default function ESManager() {
 
               {/* 設問リスト */}
               <div className="space-y-2">
-                {selectedEntry.questions.length === 0 && (
+                {!selectedEntry || selectedEntry.questions.length === 0 ? (
                   <div className="text-gray-400 text-sm">設問がありません。テンプレートから追加してください。</div>
-                )}
-                {selectedEntry.questions.map(q => (
-                  <div key={q.id} className="border rounded">
-                    {/* 設問ヘッダー */}
-                    <div
-                      className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50"
-                      onClick={() => setOpenQuestionId(prev => prev === q.id ? null : q.id)}
-                    >
-                      <span className="font-medium text-sm">{q.title}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">{q.answer.length}{q.maxLength ? `/${q.maxLength}` : ""}文字</span>
-                        <button
-                          onClick={e => { e.stopPropagation(); deleteQuestion(q.id); }}
-                          className="text-gray-400 hover:text-red-500 text-xs"
-                        >✕</button>
-                        <span className="text-xs text-gray-400">{openQuestionId === q.id ? "▲" : "▼"}</span>
+                ) : (
+                  selectedEntry.questions.map(q => (
+                    <div key={q.id} className="border rounded">
+                      <div
+                        className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50"
+                        onClick={() => setOpenQuestionId(prev => prev === q.id ? null : q.id)}
+                      >
+                        <span className="font-medium text-sm">{q.title}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{q.answer.length}{q.maxLength ? `/${q.maxLength}` : ""}文字</span>
+                          <button
+                            onClick={e => { e.stopPropagation(); deleteQuestion(q.id); }}
+                            className="text-gray-400 hover:text-red-500 text-xs"
+                          >✕</button>
+                          <span className="text-xs text-gray-400">{openQuestionId === q.id ? "▲" : "▼"}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* アコーディオン展開 */}
-                    {openQuestionId === q.id && (
-                      <div className="px-3 pb-3">
-                        {editingId === q.id ? (
-                          <>
-                            <textarea
-                              value={q.answer}
-                              onChange={e => updateAnswer(q.id, e.target.value)}
-                              className="w-full border rounded p-2 text-sm min-h-[120px] resize-y"
-                              placeholder="回答を入力..."
-                            />
-                            <div className="flex items-center justify-between mt-1">
-                              <span className={`text-xs ${q.maxLength && q.answer.length > q.maxLength ? "text-red-500" : "text-gray-400"}`}>
-                                {q.answer.length}{q.maxLength ? `/${q.maxLength}文字` : "文字"}
-                              </span>
+                      {openQuestionId === q.id && (
+                        <div className="px-3 pb-3">
+                          {editingId === q.id ? (
+                            <>
+                              <textarea
+                                value={q.answer}
+                                onChange={e => updateAnswer(q.id, e.target.value)}
+                                className="w-full border rounded p-2 text-sm min-h-[120px] resize-y"
+                                placeholder="回答を入力..."
+                              />
+                              <div className="flex items-center justify-between mt-1">
+                                <span className={`text-xs ${q.maxLength && q.answer.length > q.maxLength ? "text-red-500" : "text-gray-400"}`}>
+                                  {q.answer.length}{q.maxLength ? `/${q.maxLength}文字` : "文字"}
+                                </span>
+                                <button
+                                  onClick={() => saveAnswer(q.id, q.answer)}
+                                  className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                                >保存</button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap min-h-[40px]">
+                                {q.answer || <span className="text-gray-400">回答なし</span>}
+                              </p>
                               <button
-                                onClick={() => setEditingId(null)}
-                                className="text-xs bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                              >保存</button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap min-h-[40px]">
-                              {q.answer || <span className="text-gray-400">回答なし</span>}
-                            </p>
-                            <button
-                              onClick={() => setEditingId(q.id)}
-                              className="mt-2 text-xs border border-gray-300 rounded px-3 py-1 hover:bg-gray-100"
-                            >編集</button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                                onClick={() => setEditingId(q.id)}
+                                className="mt-2 text-xs border border-gray-300 rounded px-3 py-1 hover:bg-gray-100"
+                              >編集</button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </>
           )}
