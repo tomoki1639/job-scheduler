@@ -3,13 +3,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getCalendarGrid, formatDate, getCategoryColor } from "@/lib/calendar";
-import { CalendarEvent } from "@/types";
+import { getCalendarGrid, formatDate, getCategoryColor, getLectureDatesInMonth } from "@/lib/calendar";
+import { CalendarEvent, Lecture } from "@/types";
 
 const SAMPLE_EVENTS: CalendarEvent[] = [
-  { id: "1", title: "〇〇社 説明会", date: "2026-03-05", category: "job" },
-  { id: "2", title: "一次面接", date: "2026-03-12", category: "job" },
-  { id: "3", title: "友人と食事", date: "2026-03-15", category: "private" },
+  { id: "1", title: "〇〇社 説明会", date: "2026-03-06", category: "job" },
+  { id: "2", title: "一次面接", date: "2026-03-13", category: "job" },
+  { id: "3", title: "友人と食事", date: "2026-03-16", category: "private" },
+];
+
+const SAMPLE_LECTURES: Lecture[] = [
+  { id: "1", name: "線形代数", dayOfWeek: "mon", period: 1 },
+  { id: "2", name: "プログラミング", dayOfWeek: "tue", period: 2 },
+  { id: "3", name: "英語", dayOfWeek: "wed", period: 3 },
+  { id: "4", name: "データ構造", dayOfWeek: "thu", period: 1 },
+  { id: "5", name: "統計学", dayOfWeek: "fri", period: 2 },
 ];
 
 const WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"];
@@ -20,6 +28,7 @@ export default function CalendarView() {
   const [month, setMonth] = useState(today.getMonth());
 
   const grid = getCalendarGrid(year, month);
+  const lectureDates = getLectureDatesInMonth(year, month, SAMPLE_LECTURES);
 
   const prevMonth = () => {
     if (month === 0) { setYear(y => y - 1); setMonth(11); }
@@ -33,6 +42,11 @@ export default function CalendarView() {
   const getEventsForDate = (date: Date) => {
     const key = formatDate(date);
     return SAMPLE_EVENTS.filter(e => e.date === key);
+  };
+
+  const getLecturesForDate = (date: Date) => {
+    const key = formatDate(date);
+    return lectureDates.filter(l => l.date === key).map(l => l.lecture);
   };
 
   return (
@@ -59,8 +73,10 @@ export default function CalendarView() {
         {grid.map((date, i) => {
           const isToday = date && formatDate(date) === formatDate(today);
           const events = date ? getEventsForDate(date) : [];
+          const lectures = date ? getLecturesForDate(date) : [];
+
           return (
-            <div key={i} className="border-r border-b min-h-[80px] p-1">
+            <div key={i} className="border-r border-b min-h-[90px] p-1">
               {date && (
                 <>
                   <span className={`text-sm inline-flex items-center justify-center w-6 h-6 rounded-full
@@ -68,9 +84,20 @@ export default function CalendarView() {
                     {date.getDate()}
                   </span>
                   <div className="mt-1 space-y-0.5">
+                    {lectures.map(lecture => (
+                      
+                        key={lecture.id}
+                        href="/timetable"
+                        className="block text-xs px-1 rounded truncate bg-orange-400 text-white hover:bg-orange-500"
+                      >
+                        📚 {lecture.name}
+                      </a>
+                    ))}
                     {events.map(event => (
-                      <div key={event.id}
-                        className={`text-xs px-1 rounded truncate ${getCategoryColor(event.category)}`}>
+                      <div
+                        key={event.id}
+                        className={`text-xs px-1 rounded truncate ${getCategoryColor(event.category)}`}
+                      >
                         {event.title}
                       </div>
                     ))}

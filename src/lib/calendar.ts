@@ -1,4 +1,4 @@
-import { CalendarEvent } from "@/types";
+import { CalendarEvent, Lecture, DayOfWeek } from "@/types";
 
 export function getCalendarGrid(year: number, month: number): (Date | null)[] {
   const days: Date[] = [];
@@ -29,4 +29,30 @@ export function getCategoryColor(category: CalendarEvent["category"]): string {
     case "private": return "bg-green-500 text-white";
     case "lecture": return "bg-orange-400 text-white";
   }
+}
+
+const DAY_MAP: Record<number, DayOfWeek> = {
+  1: "mon", 2: "tue", 3: "wed", 4: "thu", 5: "fri",
+};
+
+export function getLectureDatesInMonth(
+  year: number,
+  month: number,
+  lectures: Lecture[]
+): { date: string; lecture: Lecture }[] {
+  const results: { date: string; lecture: Lecture }[] = [];
+  const d = new Date(year, month, 1);
+
+  while (d.getMonth() === month) {
+    const dayOfWeek = DAY_MAP[d.getDay()];
+    if (dayOfWeek) {
+      const matched = lectures.filter(l => l.dayOfWeek === dayOfWeek);
+      for (const lecture of matched) {
+        results.push({ date: formatDate(d), lecture });
+      }
+    }
+    d.setDate(d.getDate() + 1);
+  }
+
+  return results;
 }
