@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  date        String
+  category    String // "job" | "private" | "lecture"
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model Lecture {
+  id                 String   @id @default(cuid())
+  name               String
+  dayOfWeek          String // "mon" | "tue" | "wed" | "thu" | "fri"
+  period             Int
+  memo               String?
+  assignment         String?
+  assignmentDeadline String?
+  attended           Boolean  @default(false)
+  createdAt          DateTime @default(now())
+}
+
+model Company {
+  id           String    @id @default(cuid())
+  name         String
+  status       String    @default("considering")
+  nextDeadline String?
+  memo         String?
+  esEntries    ESEntry[]
+  createdAt    DateTime  @default(now())
+}
+
+model ESEntry {
+  id        String       @id @default(cuid())
+  company   Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+  questions ESQuestion[]
+  createdAt DateTime     @default(now())
+}
+
+model ESQuestion {
+  id        String   @id @default(cuid())
+  entry     ESEntry  @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  entryId   String
+  title     String
+  answer    String   @default("")
+  maxLength Int?
+  createdAt DateTime @default(now())
+}
