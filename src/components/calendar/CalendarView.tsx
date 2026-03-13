@@ -85,14 +85,13 @@ export default function CalendarView() {
                   </span>
                   <div className="mt-1 space-y-0.5">
                     {lectures.map(lecture => (
-                      
                         key={lecture.id}
                         href="/timetable"
                         className="block text-xs px-1 rounded truncate bg-orange-400 text-white hover:bg-orange-500"
-                      >
+                        >
                         📚 {lecture.name}
-                      </a>
-                    ))}
+                        </a>
+                        ))}
                     {events.map(event => (
                       <div
                         key={event.id}
