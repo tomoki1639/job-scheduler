@@ -32,6 +32,9 @@ export default function RootLayout({
           <a href="/timetable" className="font-medium text-gray-700 hover:text-blue-600">
             📚 時間割
           </a>
+          <a href="/es" className="font-medium text-gray-700 hover:text-blue-600">
+          📝 ES管理
+          </a>
         </nav>
         {children}
       </body>

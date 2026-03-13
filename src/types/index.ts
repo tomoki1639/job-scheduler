@@ -36,3 +36,25 @@ export interface Lecture {
   assignmentDeadline?: string;
   attended?: boolean;
 }
+
+export interface ESQuestion {
+  id: string;
+  title: string;
+  answer: string;
+  maxLength?: number; 
+}
+
+export interface ESEntry {
+  id: string;
+  companyName: string;
+  questions: ESQuestion[];
+  createdAt: string;
+}
+
+export const ES_TEMPLATES = [
+  { title: "志望動機", maxLength: 400 },
+  { title: "自己PR", maxLength: 400 },
+  { title: "学生時代に力を入れたこと（ガクチカ）", maxLength: 400 },
+  { title: "将来のビジョン", maxLength: 300 },
+  { title: "弊社を志望する理由", maxLength: 400 },
+];
