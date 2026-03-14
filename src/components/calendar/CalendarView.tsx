@@ -55,7 +55,7 @@ export default function CalendarView() {
 
   return (
     <>
-      <div className="glass p-6">
+      <div className="glass-dark p-6">
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={prevMonth} className="glass-hover p-2 rounded-xl text-white/70 hover:text-white transition-colors">
@@ -134,7 +134,7 @@ export default function CalendarView() {
         </div>
 
         {/* 凡例 */}
-        <div className="flex flex-wrap gap-4 mt-4 text-xs text-white/70">
+        <div className="flex flex-wrap gap-4 mt-4 text-xs text-white">
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block"/>就活</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-400 inline-block"/>プライベート</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block"/>講義</span>
