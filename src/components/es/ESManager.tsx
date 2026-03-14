@@ -182,7 +182,7 @@ export default function ESManager() {
                   <button
                     key={t.title}
                     onClick={() => addQuestionFromTemplate(t)}
-                    className="text-xs border border-gray-300 rounded px-2 py-1 mr-1 mb-1 hover:bg-gray-100"
+                    className="text-xs border border-gray-300 rounded px-2 py-1 mr-1 mb-1 hover:bg-gray-100 text-black"
                   >
                     ＋{t.title}
                   </button>
@@ -238,7 +238,7 @@ export default function ESManager() {
                               </p>
                               <button
                                 onClick={() => setEditingId(q.id)}
-                                className="mt-2 text-xs border border-gray-300 rounded px-3 py-1 hover:bg-gray-100"
+                                className="mt-2 text-xs border border-gray-300 rounded px-3 py-1 hover:bg-gray-100 text-black"
                               >編集</button>
                             </>
                           )}
