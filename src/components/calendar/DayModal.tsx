@@ -22,12 +22,12 @@ interface Props {
   onEventDeleted: (id: string) => void;
 }
 
-const PERIOD_TIMES: Record<number, { start: string; end: string }> = {
-  1: { start: "08:50", end: "10:20" },
-  2: { start: "10:30", end: "12:00" },
-  3: { start: "13:00", end: "14:30" },
-  4: { start: "14:40", end: "16:10" },
-  5: { start: "16:20", end: "17:50" },
+const PERIOD_TIMES: Record<number, { start: number; end: number }> = {
+  1: { start: 8, end: 10 },
+  2: { start: 10, end: 12 },
+  3: { start: 13, end: 14 },
+  4: { start: 14, end: 16 },
+  5: { start: 16, end: 18 },
 };
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -36,7 +36,12 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState("");
   const [showAddEvent, setShowAddEvent] = useState(false);
-  const [newEvent, setNewEvent] = useState({ title: "", category: "job" as EventCategory });
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    category: "job" as EventCategory,
+    startTime: "",
+    endTime: "",
+  });
   const dateStr = formatDate(date);
 
   useEffect(() => {
@@ -77,15 +82,42 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
     const res = await fetch("/api/events", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...newEvent, date: dateStr }),
+      body: JSON.stringify({
+        title: newEvent.title,
+        date: dateStr,
+        category: newEvent.category,
+        startTime: newEvent.startTime || null,
+        endTime: newEvent.endTime || null,
+      }),
     });
     const created = await res.json();
     onEventAdded(created);
-    setNewEvent({ title: "", category: "job" });
+    setNewEvent({ title: "", category: "job", startTime: "", endTime: "" });
     setShowAddEvent(false);
   };
 
   const dateLabel = `${date.getMonth() + 1}月${date.getDate()}日（${"日月火水木金土"[date.getDay()]}）`;
+
+  // タイムラインに表示するアイテムを時間でソート
+  const timelineItems = [
+    ...lectures.map(l => ({
+      type: "lecture" as const,
+      startHour: PERIOD_TIMES[l.period]?.start ?? 0,
+      endHour: PERIOD_TIMES[l.period]?.end ?? 0,
+      label: `📚 ${l.name}（${l.period}限）`,
+      color: "text-orange-300",
+    })),
+    ...events
+      .filter(e => e.startTime)
+      .map(e => ({
+        type: "event" as const,
+        startHour: parseInt(e.startTime!.split(":")[0]),
+        endHour: e.endTime ? parseInt(e.endTime.split(":")[0]) : parseInt(e.startTime!.split(":")[0]) + 1,
+        label: e.title,
+        color: e.category === "job" ? "text-blue-300" : "text-green-300",
+        id: e.id,
+      })),
+  ].sort((a, b) => a.startHour - b.startHour);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay" onClick={onClose}>
@@ -109,29 +141,21 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
             <h4 className="text-sm font-medium text-white/60 mb-3">📅 タイムライン</h4>
             <div className="relative">
               {HOURS.map(hour => {
-                const lecture = lectures.find(l => {
-                  const times = PERIOD_TIMES[l.period];
-                  if (!times) return false;
-                  const startHour = parseInt(times.start.split(":")[0]);
-                  return startHour === hour;
-                });
-                const hourEvents = events.filter(e => {
-                  if (!e.startTime) return false;
-                  return parseInt(e.startTime.split(":")[0]) === hour;
-                });
-
+                const items = timelineItems.filter(item => item.startHour === hour);
                 return (
-                  <div key={hour} className="flex gap-2 min-h-[40px]">
-                    <span className="text-xs text-white/30 w-8 shrink-0 pt-1">{String(hour).padStart(2, "0")}:00</span>
+                  <div key={hour} className="flex gap-2 min-h-[44px]">
+                    <span className="text-xs text-white/30 w-10 shrink-0 pt-1">
+                      {String(hour).padStart(2, "0")}:00
+                    </span>
                     <div className="flex-1 border-t border-white/5 pt-1 space-y-1">
-                      {lecture && (
-                        <div className="glass-dark px-2 py-1 rounded-lg text-xs text-orange-300">
-                          📚 {lecture.name}（{lecture.period}限）
-                        </div>
-                      )}
-                      {hourEvents.map(event => (
-                        <div key={event.id} className="glass-dark px-2 py-1 rounded-lg text-xs text-blue-300">
-                          {event.title}
+                      {items.map((item, i) => (
+                        <div key={i} className={`glass-dark px-2 py-1 rounded-lg text-xs ${item.color} flex items-center justify-between group`}>
+                          <span>{item.label}</span>
+                          {item.type === "event" && (
+                            <span className="text-white/20 text-xs">
+                              {String(item.startHour).padStart(2,"0")}:00 〜 {String(item.endHour).padStart(2,"0")}:00
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -156,17 +180,39 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
                     value={newEvent.title}
                     onChange={e => setNewEvent(p => ({ ...p, title: e.target.value }))}
                     placeholder="イベント名"
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-sm text-white placeholder-white/30"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white placeholder-white/30"
                     autoFocus
                   />
                   <select
                     value={newEvent.category}
                     onChange={e => setNewEvent(p => ({ ...p, category: e.target.value as EventCategory }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-sm text-white"
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
                   >
                     <option value="job">就活</option>
                     <option value="private">プライベート</option>
                   </select>
+                  {/* 時間範囲選択 */}
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <label className="text-xs text-white/40 block mb-1">開始時間</label>
+                      <input
+                        type="time"
+                        value={newEvent.startTime}
+                        onChange={e => setNewEvent(p => ({ ...p, startTime: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
+                      />
+                    </div>
+                    <span className="text-white/30 mt-4">〜</span>
+                    <div className="flex-1">
+                      <label className="text-xs text-white/40 block mb-1">終了時間</label>
+                      <input
+                        type="time"
+                        value={newEvent.endTime}
+                        onChange={e => setNewEvent(p => ({ ...p, endTime: e.target.value }))}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
+                      />
+                    </div>
+                  </div>
                   <div className="flex gap-1">
                     <button onClick={addEvent} className="text-xs bg-blue-500/80 text-white px-3 py-1 rounded-lg hover:bg-blue-500">保存</button>
                     <button onClick={() => setShowAddEvent(false)} className="text-xs bg-white/10 text-white/60 px-3 py-1 rounded-lg">キャンセル</button>
@@ -180,7 +226,6 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
           <div className="w-1/2 overflow-y-auto p-4">
             <h4 className="text-sm font-medium text-white/60 mb-3">✅ TODOリスト</h4>
 
-            {/* 講義課題の自動表示 */}
             {lectures.filter(l => l.assignmentDeadline === dateStr).map(l => (
               <div key={l.id} className="glass-dark px-3 py-2 rounded-xl mb-2 text-xs">
                 <span className="text-orange-300">📚 {l.name}</span>
@@ -188,7 +233,6 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
               </div>
             ))}
 
-            {/* TODOリスト */}
             <div className="space-y-2 mb-4">
               {todos.length === 0 && (
                 <p className="text-white/30 text-xs">TODOはありません</p>
@@ -213,7 +257,6 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
               ))}
             </div>
 
-            {/* TODO追加 */}
             <div className="flex gap-2">
               <input
                 type="text"

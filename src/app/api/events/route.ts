@@ -14,9 +14,9 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const { title, date, category, description } = await request.json();
+    const { title, date, category, description, startTime, endTime } = await request.json();
     const event = await prisma.calendarEvent.create({
-      data: { title, date, category, description },
+      data: { title, date, category, description, startTime, endTime },
     });
     return NextResponse.json(event);
   } catch (error) {
