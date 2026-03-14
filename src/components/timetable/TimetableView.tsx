@@ -82,13 +82,13 @@ export default function TimetableView() {
             <label className="text-xs text-gray-500 block mb-1">講義名</label>
             <input type="text" value={newLecture.name}
               onChange={e => setNewLecture(p => ({ ...p, name: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm w-32" placeholder="例：線形代数" />
+              className="border rounded px-2 py-1 text-sm w-32 text-black" placeholder="例：線形代数" />
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">曜日</label>
             <select value={newLecture.dayOfWeek}
               onChange={e => setNewLecture(p => ({ ...p, dayOfWeek: e.target.value as DayOfWeek }))}
-              className="border rounded px-2 py-1 text-sm">
+              className="border rounded px-2 py-1 text-sm text-black">
               {DAYS.map(d => <option key={d.key} value={d.key}>{d.label}</option>)}
             </select>
           </div>
@@ -96,7 +96,7 @@ export default function TimetableView() {
             <label className="text-xs text-gray-500 block mb-1">時限</label>
             <select value={newLecture.period}
               onChange={e => setNewLecture(p => ({ ...p, period: Number(e.target.value) }))}
-              className="border rounded px-2 py-1 text-sm">
+              className="border rounded px-2 py-1 text-sm text-black">
               {PERIODS.map(p => <option key={p} value={p}>{p}限</option>)}
             </select>
           </div>
@@ -104,19 +104,19 @@ export default function TimetableView() {
             <label className="text-xs text-gray-500 block mb-1">メモ</label>
             <input type="text" value={newLecture.memo}
               onChange={e => setNewLecture(p => ({ ...p, memo: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm w-28" placeholder="任意" />
+              className="border rounded px-2 py-1 text-sm w-28 text-black" placeholder="任意" />
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">課題</label>
             <input type="text" value={newLecture.assignment}
               onChange={e => setNewLecture(p => ({ ...p, assignment: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm w-28" placeholder="任意" />
+              className="border rounded px-2 py-1 text-sm w-28 text-black" placeholder="任意" />
           </div>
           <div>
             <label className="text-xs text-gray-500 block mb-1">期限</label>
             <input type="date" value={newLecture.assignmentDeadline}
               onChange={e => setNewLecture(p => ({ ...p, assignmentDeadline: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm" />
+              className="border rounded px-2 py-1 text-sm text-black" />
           </div>
           <div className="flex gap-1">
             <button onClick={addLecture} className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600">保存</button>
