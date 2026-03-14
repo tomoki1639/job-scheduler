@@ -99,7 +99,7 @@ export default function CalendarView() {
                 {date && (
                   <>
                     <span className={`text-xs inline-flex items-center justify-center w-6 h-6 rounded-full font-medium mb-1
-                      ${isToday ? "bg-blue-500 text-white" : isSat ? "text-blue-300" : isSun ? "text-red-300" : "text-white/80"}`}>
+                      ${isToday ? "bg-blue-500 text-white" : isSat ? "text-blue-300" : isSun ? "text-red-300" : "text-white"}`}>
                       {date.getDate()}
                     </span>
                     <div className="space-y-0.5">
@@ -134,7 +134,7 @@ export default function CalendarView() {
         </div>
 
         {/* 凡例 */}
-        <div className="flex flex-wrap gap-4 mt-4 text-xs text-white/40">
+        <div className="flex flex-wrap gap-4 mt-4 text-xs text-white/70">
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block"/>就活</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-400 inline-block"/>プライベート</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block"/>講義</span>
