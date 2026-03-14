@@ -61,7 +61,7 @@ export default function CalendarView() {
           <button onClick={prevMonth} className="glass-hover p-2 rounded-xl text-white/70 hover:text-white transition-colors">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <h2 className="text-2xl font-bold text-white">{year}年 {month + 1}月</h2>
+          <h2 className="text-2xl font-bold text-gray-900">{year}年 {month + 1}月</h2>
           <button onClick={nextMonth} className="glass-hover p-2 rounded-xl text-white/70 hover:text-white transition-colors">
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -71,7 +71,7 @@ export default function CalendarView() {
         <div className="grid grid-cols-7 mb-2">
           {WEEKDAYS.map((day, i) => (
             <div key={day} className={`text-center text-xs font-medium py-1
-              ${i === 5 ? "text-blue-300" : i === 6 ? "text-red-300" : "text-white/50"}`}>
+              ${i === 5 ? "text-blue-300" : i === 6 ? "text-red-300" : "text-gray-900"}`}>
               {day}
             </div>
           ))}
@@ -134,7 +134,7 @@ export default function CalendarView() {
         </div>
 
         {/* 凡例 */}
-        <div className="flex flex-wrap gap-4 mt-4 text-xs text-white">
+        <div className="flex flex-wrap gap-4 mt-4 text-xs text-gray-900">
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block"/>就活</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-400 inline-block"/>プライベート</span>
           <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block"/>講義</span>
