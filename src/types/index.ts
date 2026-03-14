@@ -34,6 +34,10 @@ export interface Lecture {
   name: string;
   dayOfWeek: DayOfWeek;
   period: number;
+  startTime?: string;
+  endTime?: string;
+  room?: string;
+  teacher?: string;
   memo?: string;
   assignment?: string;
   assignmentDeadline?: string;
