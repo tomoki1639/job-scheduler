@@ -22,12 +22,12 @@ interface Props {
   onEventDeleted: (id: string) => void;
 }
 
-const PERIOD_TIMES: Record<number, { start: number; end: number }> = {
-  1: { start: 8, end: 10 },
-  2: { start: 10, end: 12 },
-  3: { start: 13, end: 14 },
-  4: { start: 14, end: 16 },
-  5: { start: 16, end: 18 },
+const PERIOD_TIMES: Record<number, { start: number; startMin: number; end: number; endMin: number }> = {
+  1: { start: 8, startMin: 30, end: 10, endMin: 0 },
+  2: { start: 10, startMin: 20, end: 11, endMin: 50 },
+  3: { start: 12, startMin: 40, end: 14, endMin: 10 },
+  4: { start: 14, startMin: 30, end: 16, endMin: 0 },
+  5: { start: 16, startMin: 20, end: 17, endMin: 50 },
 };
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -103,7 +103,9 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
     ...lectures.map(l => ({
       type: "lecture" as const,
       startHour: PERIOD_TIMES[l.period]?.start ?? 0,
+      startMin: PERIOD_TIMES[l.period]?.startMin ?? 0,
       endHour: PERIOD_TIMES[l.period]?.end ?? 0,
+      endMin: PERIOD_TIMES[l.period]?.endMin ?? 0,
       label: `📚 ${l.name}（${l.period}限）`,
       color: "text-orange-300",
     })),
@@ -112,12 +114,14 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
       .map(e => ({
         type: "event" as const,
         startHour: parseInt(e.startTime!.split(":")[0]),
+        startMin: parseInt(e.startTime!.split(":")[1]),
         endHour: e.endTime ? parseInt(e.endTime.split(":")[0]) : parseInt(e.startTime!.split(":")[0]) + 1,
+        endMin: e.endTime ? parseInt(e.endTime.split(":")[1]) : 0,
         label: e.title,
         color: e.category === "job" ? "text-blue-300" : "text-green-300",
         id: e.id,
       })),
-  ].sort((a, b) => a.startHour - b.startHour);
+  ].sort((a, b) => a.startHour !== b.startHour ? a.startHour - b.startHour : a.startMin - b.startMin);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay" onClick={onClose}>
@@ -153,7 +157,12 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
                           <span>{item.label}</span>
                           {item.type === "event" && (
                             <span className="text-white/20 text-xs">
-                              {String(item.startHour).padStart(2,"0")}:00 〜 {String(item.endHour).padStart(2,"0")}:00
+                              {String(item.startHour).padStart(2, "0")}:{String(item.startMin).padStart(2, "0")} 〜 {String(item.endHour).padStart(2, "0")}:{String(item.endMin).padStart(2, "0")}
+                            </span>
+                          )}
+                          {item.type === "lecture" && (
+                            <span className="text-white/20 text-xs">
+                              {String(item.startHour).padStart(2, "0")}:{String(item.startMin).padStart(2, "0")} 〜 {String(item.endHour).padStart(2, "0")}:{String(item.endMin).padStart(2, "0")}
                             </span>
                           )}
                         </div>
