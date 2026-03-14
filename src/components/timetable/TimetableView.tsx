@@ -191,8 +191,7 @@ export default function TimetableView() {
           </tbody>
         </table>
       </div>
-    </div>
-    {selectedLecture && (
+      {selectedLecture && (
       <LectureModal
         lecture={selectedLecture}
         onClose={() => setSelectedLecture(null)}
@@ -206,5 +205,6 @@ export default function TimetableView() {
         }}
       />
     )}
+    </div>
   );
 }
