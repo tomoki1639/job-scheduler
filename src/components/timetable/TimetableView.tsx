@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Lecture, DayOfWeek } from "@/types";
+import LectureModal from "./LectureModal";
 
 const DAYS: { key: DayOfWeek; label: string }[] = [
   { key: "mon", label: "月" },
@@ -22,6 +23,7 @@ export default function TimetableView() {
     memo: string; assignment: string; assignmentDeadline: string;
   }>({ name: "", dayOfWeek: "mon", period: 1, memo: "", assignment: "", assignmentDeadline: "" });
   const [loading, setLoading] = useState(true);
+  const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
 
   // データ取得
   useEffect(() => {
@@ -149,7 +151,7 @@ export default function TimetableView() {
                       {lecture ? (
                         <div>
                           <button
-                            onClick={() => setOpenId(prev => prev === lecture.id ? null : lecture.id)}
+                            onClick={() => setSelectedLecture(lecture)}
                             className="w-full text-left bg-orange-50 border border-orange-200 hover:bg-orange-100 rounded px-2 py-1.5 text-xs font-medium text-orange-800 transition-colors"
                           >
                             <div className="truncate">{lecture.name}</div>
@@ -190,5 +192,19 @@ export default function TimetableView() {
         </table>
       </div>
     </div>
+    {selectedLecture && (
+      <LectureModal
+        lecture={selectedLecture}
+        onClose={() => setSelectedLecture(null)}
+        onUpdated={(updated) => {
+          setLectures(prev => prev.map(l => l.id === updated.id ? updated : l));
+          setSelectedLecture(null);
+        }}
+        onDeleted={async (id) => {
+          await deleteLecture(id);
+          setSelectedLecture(null);
+        }}
+      />
+    )}
   );
 }
