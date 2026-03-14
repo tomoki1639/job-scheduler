@@ -139,7 +139,7 @@ export default function ESManager() {
                 onChange={e => setNewCompanyName(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && addCompany()}
                 placeholder="企業名を入力"
-                className="w-full border rounded px-2 py-1 text-sm mb-1"
+                className="w-full border rounded px-2 py-1 text-sm mb-1 text-black"
                 autoFocus
               />
               <div className="flex gap-1">
@@ -218,7 +218,7 @@ export default function ESManager() {
                               <textarea
                                 value={q.answer}
                                 onChange={e => updateAnswer(q.id, e.target.value)}
-                                className="w-full border rounded p-2 text-sm min-h-[120px] resize-y"
+                                className="w-full border rounded p-2 text-sm min-h-[120px] resize-y text-black"
                                 placeholder="回答を入力..."
                               />
                               <div className="flex items-center justify-between mt-1">
