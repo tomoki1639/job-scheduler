@@ -58,11 +58,11 @@ export default function CalendarView() {
       <div className="glass p-6">
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
-          <button onClick={prevMonth} className="glass-hover p-2 rounded-xl text-white/70 hover:text-white transition-colors">
+          <button onClick={prevMonth} className="glass-hover p-2 rounded-xl text-gray-900 hover:text-gray-700 transition-colors">
             <ChevronLeft className="h-5 w-5" />
           </button>
           <h2 className="text-2xl font-bold text-gray-900">{year}年 {month + 1}月</h2>
-          <button onClick={nextMonth} className="glass-hover p-2 rounded-xl text-white/70 hover:text-white transition-colors">
+          <button onClick={nextMonth} className="glass-hover p-2 rounded-xl text-gray-900 hover:text-gray-700 transition-colors">
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
