@@ -20,8 +20,7 @@ export default function TimetableView() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newLecture, setNewLecture] = useState<{
     name: string; dayOfWeek: DayOfWeek; period: number;
-    memo: string; assignment: string; assignmentDeadline: string;
-  }>({ name: "", dayOfWeek: "mon", period: 1, memo: "", assignment: "", assignmentDeadline: "" });
+  }>({ name: "", dayOfWeek: "mon", period: 1 });
   const [loading, setLoading] = useState(true);
   const [selectedLecture, setSelectedLecture] = useState<Lecture | null>(null);
 
@@ -42,16 +41,11 @@ export default function TimetableView() {
     const res = await fetch("/api/lectures", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...newLecture,
-        memo: newLecture.memo || null,
-        assignment: newLecture.assignment || null,
-        assignmentDeadline: newLecture.assignmentDeadline || null,
-      }),
+      body: JSON.stringify(newLecture),
     });
     const created = await res.json();
     setLectures(prev => [...prev, created]);
-    setNewLecture({ name: "", dayOfWeek: "mon", period: 1, memo: "", assignment: "", assignmentDeadline: "" });
+    setNewLecture({ name: "", dayOfWeek: "mon", period: 1 });
     setShowAddForm(false);
   };
 
@@ -99,24 +93,6 @@ export default function TimetableView() {
               className="border rounded px-2 py-1 text-sm text-black">
               {PERIODS.map(p => <option key={p} value={p}>{p}限</option>)}
             </select>
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">メモ</label>
-            <input type="text" value={newLecture.memo}
-              onChange={e => setNewLecture(p => ({ ...p, memo: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm w-28 text-black" placeholder="任意" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">課題</label>
-            <input type="text" value={newLecture.assignment}
-              onChange={e => setNewLecture(p => ({ ...p, assignment: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm w-28 text-black" placeholder="任意" />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 block mb-1">期限</label>
-            <input type="date" value={newLecture.assignmentDeadline}
-              onChange={e => setNewLecture(p => ({ ...p, assignmentDeadline: e.target.value }))}
-              className="border rounded px-2 py-1 text-sm text-black" />
           </div>
           <div className="flex gap-1">
             <button onClick={addLecture} className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600">保存</button>
