@@ -154,7 +154,7 @@ export default function ESManager() {
               <div
                 key={company.id}
                 className={`flex items-center justify-between px-2 py-2 rounded cursor-pointer text-sm
-                  ${selectedId === company.id ? "bg-blue-100 text-blue-800 font-medium" : "hover:bg-gray-100"}`}
+                  ${selectedId === company.id ? "bg-blue-100 text-blue-800 font-medium" : "hover:bg-gray-100 text-black"}`}
                 onClick={() => setSelectedId(company.id)}
               >
                 <span className="truncate">{company.name}</span>
@@ -200,7 +200,7 @@ export default function ESManager() {
                         className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-gray-50"
                         onClick={() => setOpenQuestionId(prev => prev === q.id ? null : q.id)}
                       >
-                        <span className="font-medium text-sm">{q.title}</span>
+                        <span className="font-medium text-sm text-black">{q.title}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-gray-400">{q.answer.length}{q.maxLength ? `/${q.maxLength}` : ""}文字</span>
                           <button
