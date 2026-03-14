@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)", minHeight: "100vh", color: "white" }}>
         <nav className="glass sticky top-0 z-50 mx-4 mt-4 mb-2 rounded-2xl">
           <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
             <span className="font-bold text-white text-lg">就活・学業管理</span>
