@@ -55,7 +55,7 @@ export default function CalendarView() {
 
   return (
     <>
-      <div className="glass-dark p-6">
+      <div className="glass p-6">
         {/* ヘッダー */}
         <div className="flex items-center justify-between mb-6">
           <button onClick={prevMonth} className="glass-hover p-2 rounded-xl text-white/70 hover:text-white transition-colors">
@@ -99,7 +99,7 @@ export default function CalendarView() {
                 {date && (
                   <>
                     <span className={`text-xs inline-flex items-center justify-center w-6 h-6 rounded-full font-medium mb-1
-                      ${isToday ? "bg-blue-500 text-white" : isSat ? "text-blue-300" : isSun ? "text-red-300" : "text-white"}`}>
+                      ${isToday ? "bg-blue-500 text-white" : isSat ? "text-blue-600" : isSun ? "text-red-600" : "text-gray-900"}`}>
                       {date.getDate()}
                     </span>
                     <div className="space-y-0.5">
