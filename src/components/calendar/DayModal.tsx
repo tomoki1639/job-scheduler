@@ -123,6 +123,8 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
       })),
   ].sort((a, b) => a.startHour !== b.startHour ? a.startHour - b.startHour : a.startMin - b.startMin);
 
+  const allDayEvents = events.filter(e => !e.startTime);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay" onClick={onClose}>
       <div
@@ -143,6 +145,22 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
           {/* 左: タイムライン */}
           <div className="w-1/2 border-r border-white/10 overflow-y-auto p-4">
             <h4 className="text-sm font-medium text-white/60 mb-3">📅 タイムライン</h4>
+            {/* 終日イベント */}
+            {allDayEvents.length > 0 && (
+              <div className="mb-3 space-y-1">
+                <p className="text-xs text-white/30 mb-1">終日</p>
+                {allDayEvents.map(event => (
+                  <div key={event.id} className={`glass-dark px-2 py-1 rounded-lg text-xs flex items-center justify-between
+        ${event.category === "job" ? "text-blue-300" : "text-green-300"}`}>
+                    <span>{event.title}</span>
+                    <button
+                      onClick={() => onEventDeleted(event.id)}
+                      className="text-white/20 hover:text-red-400 ml-2 text-xs"
+                    >✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="relative">
               {HOURS.map(hour => {
                 const items = timelineItems.filter(item => item.startHour === hour);
@@ -200,28 +218,50 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
                     <option value="job">就活</option>
                     <option value="private">プライベート</option>
                   </select>
-                  {/* 時間範囲選択 */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <label className="text-xs text-white/40 block mb-1">開始時間</label>
-                      <input
-                        type="time"
-                        value={newEvent.startTime}
-                        onChange={e => setNewEvent(p => ({ ...p, startTime: e.target.value }))}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
-                      />
-                    </div>
-                    <span className="text-white/30 mt-4">〜</span>
-                    <div className="flex-1">
-                      <label className="text-xs text-white/40 block mb-1">終了時間</label>
-                      <input
-                        type="time"
-                        value={newEvent.endTime}
-                        onChange={e => setNewEvent(p => ({ ...p, endTime: e.target.value }))}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
-                      />
-                    </div>
+
+                  {/* 終日 or 時間指定 切り替え */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setNewEvent(p => ({ ...p, startTime: "", endTime: "" }))}
+                      className={`flex-1 text-xs px-2 py-1.5 rounded-lg transition-colors
+          ${!newEvent.startTime ? "bg-blue-500/60 text-white" : "bg-white/5 text-white/40 hover:bg-white/10"}`}
+                    >
+                      終日
+                    </button>
+                    <button
+                      onClick={() => setNewEvent(p => ({ ...p, startTime: "09:00", endTime: "10:00" }))}
+                      className={`flex-1 text-xs px-2 py-1.5 rounded-lg transition-colors
+          ${newEvent.startTime ? "bg-blue-500/60 text-white" : "bg-white/5 text-white/40 hover:bg-white/10"}`}
+                    >
+                      時間指定
+                    </button>
                   </div>
+
+                  {/* 時間範囲選択（時間指定の場合のみ表示） */}
+                  {newEvent.startTime !== undefined && newEvent.startTime !== "" && (
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <label className="text-xs text-white/40 block mb-1">開始時間</label>
+                        <input
+                          type="time"
+                          value={newEvent.startTime}
+                          onChange={e => setNewEvent(p => ({ ...p, startTime: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
+                        />
+                      </div>
+                      <span className="text-white/30 mt-4">〜</span>
+                      <div className="flex-1">
+                        <label className="text-xs text-white/40 block mb-1">終了時間</label>
+                        <input
+                          type="time"
+                          value={newEvent.endTime}
+                          onChange={e => setNewEvent(p => ({ ...p, endTime: e.target.value }))}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-sm text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-1">
                     <button onClick={addEvent} className="text-xs bg-blue-500/80 text-white px-3 py-1 rounded-lg hover:bg-blue-500">保存</button>
                     <button onClick={() => setShowAddEvent(false)} className="text-xs bg-white/10 text-white/60 px-3 py-1 rounded-lg">キャンセル</button>
