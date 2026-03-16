@@ -16,6 +16,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function CalendarView() {
   const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -80,7 +81,7 @@ export default function CalendarView() {
         {/* 日付グリッド */}
         <div className="grid grid-cols-7 gap-1">
           {grid.map((date, i) => {
-            const isToday = date && formatDate(date) === formatDate(today);
+            const isToday = date && formatDate(date) === todayStr;
             const isSat = i % 7 === 5;
             const isSun = i % 7 === 6;
             const dayEvents = date ? getEventsForDate(date) : [];
