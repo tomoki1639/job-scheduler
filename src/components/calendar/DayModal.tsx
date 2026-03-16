@@ -63,13 +63,18 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
   };
 
   const toggleTodo = async (todo: Todo) => {
-    const res = await fetch(`/api/todos/${todo.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ completed: !todo.completed }),
-    });
-    const updated = await res.json();
-    setTodos(prev => prev.map(t => t.id === todo.id ? updated : t));
+    try {
+      const res = await fetch(`/api/todos/${todo.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !todo.completed }),
+      });
+      if (!res.ok) throw new Error("更新失敗");
+      const updated = await res.json();
+      setTodos(prev => prev.map(t => t.id === todo.id ? { ...t, completed: !todo.completed } : t));
+    } catch (error) {
+      console.error("TODO更新エラー:", error);
+    }
   };
 
   const deleteTodo = async (id: string) => {
