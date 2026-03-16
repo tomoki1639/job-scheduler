@@ -292,15 +292,17 @@ export default function DayModal({ date, events, lectures, onClose, onEventAdded
                 <p className="text-white/30 text-xs">TODOはありません</p>
               )}
               {todos.map(todo => (
-                <div key={todo.id} className={`flex items-center gap-2 glass-dark px-3 py-2 rounded-xl group transition-all ${todo.completed ? "opacity-50" : ""}`}>
+                <div key={todo.id} className={`flex items-center gap-2 glass-dark px-3 py-2 rounded-xl group transition-all ${todo.completed ? "opacity-60" : ""}`}>
                   <button
                     onClick={() => toggleTodo(todo)}
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-colors
-                      ${todo.completed ? "bg-green-500 border-green-500" : "border-white/30 hover:border-white/60"}`}
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
+        ${todo.completed
+                        ? "bg-green-500 border-green-500"
+                        : "border-white/40 hover:border-white/80"}`}
                   >
                     {todo.completed && <Check className="h-3 w-3 text-white" />}
                   </button>
-                  <span className={`text-sm flex-1 ${todo.completed ? "line-through text-white/40" : "text-white"}`}>
+                  <span className={`text-sm flex-1 transition-all ${todo.completed ? "line-through text-white/40" : "text-white"}`}>
                     {todo.title}
                   </span>
                   <button
