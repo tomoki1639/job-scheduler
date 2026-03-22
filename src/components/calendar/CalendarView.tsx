@@ -16,12 +16,22 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 export default function CalendarView() {
   const today = new Date();
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [todayStr, setTodayStr] = useState("");
+
+  useEffect(() => {
+    const updateToday = () => {
+      const now = new Date();
+      setTodayStr(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`);
+    };
+    updateToday();
+    const interval = setInterval(updateToday, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const grid = getCalendarGrid(year, month);
   const lectureDates = getLectureDatesInMonth(year, month, lectures);
@@ -32,12 +42,12 @@ export default function CalendarView() {
   }, []);
 
   const prevMonth = () => {
-    if (month === 0) { setYear(y => y - 1); setMonth(11); }
-    else setMonth(m => m - 1);
+    if (month === 0) { setYear((y: number) => y - 1); setMonth(11); }
+    else setMonth((m: number) => m - 1);
   };
   const nextMonth = () => {
-    if (month === 11) { setYear(y => y + 1); setMonth(0); }
-    else setMonth(m => m + 1);
+    if (month === 11) { setYear((y: number) => y + 1); setMonth(0); }
+    else setMonth((m: number) => m + 1);
   };
 
   const getEventsForDate = (date: Date) =>
@@ -115,7 +125,7 @@ export default function CalendarView() {
                         </div>
                       ))}
                       {(dayLectures.length + dayEvents.length) > 3 && (
-                        <div className="text-xs text-white/40 px-1">
+                        <div className="text-xs text-gray-500 px-1">
                           +{dayLectures.length + dayEvents.length - 3}件
                         </div>
                       )}
